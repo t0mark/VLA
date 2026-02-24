@@ -1,0 +1,15 @@
+navila_node:
+  ros__parameters:
+    # 모델 가중치 경로 (navila-llama3-8b-8f 폴더)
+    model_path: ""
+    model_base: ""
+
+    # 추론 설정
+    num_frames: 8           # 프레임 버퍼 크기 (히스토리 7 + 현재 1)
+    inference_hz: 1.0       # 추론 주기 (Hz)
+    max_new_tokens: 256     # 생성 최대 토큰 수
+
+    # 토픽 이름
+    image_topic: "/camera/image_raw"
+    instruction_topic: "/navila/instruction"
+    command_topic: "/navila/command"
