@@ -9,7 +9,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/config", ["config/navila_params.yaml"]),
+        ("share/" + package_name + "/config", ["config/navila.yaml"]),
         ("share/" + package_name + "/launch", ["launch/navila.launch.py"]),
     ],
     install_requires=["setuptools"],
@@ -22,6 +22,7 @@ setup(
     entry_points={
         "console_scripts": [
             "navila_node = MoMa_vla.navila_node:main",
+            "chat_prompt_node = MoMa_vla.chat_prompt_node:main",
         ],
     },
 )

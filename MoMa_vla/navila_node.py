@@ -12,6 +12,9 @@ Publishes:
 import sys
 import os
 
+# CUDA 메모리 할당기 초기화 전에 설정해야 효과가 있음
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 # llava 패키지 경로를 sys.path에 추가
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -48,6 +51,7 @@ class NaViLANode(Node):
         self.declare_parameter("num_frames", 8)
         self.declare_parameter("inference_hz", 1.0)
         self.declare_parameter("max_new_tokens", 256)
+        self.declare_parameter("load_4bit", True)
         self.declare_parameter("image_topic", "/camera/image_raw")
         self.declare_parameter("instruction_topic", "/navila/instruction")
         self.declare_parameter("command_topic", "/navila/command")
@@ -56,6 +60,7 @@ class NaViLANode(Node):
         self.model_base = self.get_parameter("model_base").value or None
         self.num_frames = self.get_parameter("num_frames").value
         self.max_new_tokens = self.get_parameter("max_new_tokens").value
+        load_4bit = self.get_parameter("load_4bit").value
         inference_hz = self.get_parameter("inference_hz").value
 
         image_topic = self.get_parameter("image_topic").value
@@ -72,11 +77,13 @@ class NaViLANode(Node):
         self.bridge = CvBridge()
 
         # 모델 로딩
-        self.get_logger().info(f"모델 로딩 중: {self.model_path}")
+        self.get_logger().info(f"모델 로딩 중: {self.model_path} (4-bit: {load_4bit})")
         disable_torch_init()
         model_name = get_model_name_from_path(self.model_path)
         self.tokenizer, self.model, self.image_processor, _ = load_pretrained_model(
-            self.model_path, model_name, self.model_base
+            self.model_path, model_name, self.model_base,
+            load_4bit=load_4bit,
+            torch_dtype=torch.float16,  # prepare_config_for_eval이 pop하여 소비
         )
         self.model.eval()
         self.get_logger().info("모델 로딩 완료")
@@ -160,6 +167,7 @@ class NaViLANode(Node):
         )
 
         try:
+            torch.cuda.empty_cache()
             with torch.inference_mode():
                 output_ids = self.model.generate(
                     input_ids,

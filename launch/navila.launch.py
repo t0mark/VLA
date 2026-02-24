@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 import os
 from ament_index_python.packages import get_package_share_directory
@@ -8,7 +8,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     pkg_share = get_package_share_directory("MoMa_vla")
-    default_params = os.path.join(pkg_share, "config", "navila_params.yaml")
+    config_dir = os.path.join(pkg_share, "config")
 
     # pkg_share = <ws>/install/MoMa_vla/share/MoMa_vla
     # ws_root   = <ws>
@@ -18,8 +18,8 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             "params_file",
-            default_value=default_params,
-            description="Path to navila_params.yaml",
+            default_value="navila.yaml",
+            description="Config filename inside the config directory",
         ),
         DeclareLaunchArgument(
             "model_path",
@@ -37,7 +37,7 @@ def generate_launch_description():
             name="navila_node",
             output="screen",
             parameters=[
-                LaunchConfiguration("params_file"),
+                PathJoinSubstitution([config_dir, LaunchConfiguration("params_file")]),
                 {
                     "model_path": LaunchConfiguration("model_path"),
                     "model_base": LaunchConfiguration("model_base"),
