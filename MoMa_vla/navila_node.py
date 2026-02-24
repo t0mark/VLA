@@ -13,7 +13,7 @@ import sys
 import os
 
 # llava 패키지 경로를 sys.path에 추가
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from collections import deque
 

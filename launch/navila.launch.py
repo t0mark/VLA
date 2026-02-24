@@ -26,6 +26,11 @@ def generate_launch_description():
             default_value=default_model_path,
             description="Path to NaVILA model directory",
         ),
+        DeclareLaunchArgument(
+            "model_base",
+            default_value="",
+            description="Base model path (LoRA 사용 시에만 지정)",
+        ),
         Node(
             package="MoMa_vla",
             executable="navila_node",
@@ -33,7 +38,10 @@ def generate_launch_description():
             output="screen",
             parameters=[
                 LaunchConfiguration("params_file"),
-                {"model_path": LaunchConfiguration("model_path")},
+                {
+                    "model_path": LaunchConfiguration("model_path"),
+                    "model_base": LaunchConfiguration("model_base"),
+                },
             ],
         ),
     ])
