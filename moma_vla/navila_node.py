@@ -193,6 +193,8 @@ class NaViLANode(Node):
         except Exception as e:
             self.get_logger().error(f"추론 실패: {e}")
 
+        self.current_instruction = ""
+
 
 def main(args=None):
     rclpy.init(args=args)
