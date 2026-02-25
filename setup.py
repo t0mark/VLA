@@ -23,6 +23,7 @@ setup(
         "console_scripts": [
             "navila_node = moma_vla.navila_node:main",
             "chat_prompt_node = moma_vla.chat_prompt_node:main",
+            "regex_parshing_node = moma_vla.regex_parshing_node:main",
         ],
     },
 )

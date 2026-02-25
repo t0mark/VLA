@@ -4,9 +4,7 @@ NaVILA CLI Chat Node
 터미널에서 내비게이션 지시를 입력하고 로봇 응답을 표시하는 대화형 CLI 노드.
 
 Publishes:
-  /navila/prompt   (std_msgs/String)  - 사용자 입력 지시
-Subscribes:
-  /navila/output   (std_msgs/String)  - 로봇 명령 응답
+  /navila/prompt   (std_msgs/String)  - 사용자 입력 지시z
 """
 
 import threading
@@ -21,13 +19,10 @@ class ChatPromptNode(Node):
         super().__init__("chat_prompt_node")
 
         self.declare_parameter("prompt_topic", "/navila/prompt")
-        self.declare_parameter("output_topic", "/navila/output")
 
         prompt_topic = self.get_parameter("prompt_topic").value
-        output_topic = self.get_parameter("output_topic").value
 
         self.prompt_pub = self.create_publisher(String, prompt_topic, 10)
-        self.create_subscription(String, output_topic, self._output_callback, 10)
 
         self.input_thread = threading.Thread(target=self._stdin_reader, daemon=True)
         self.input_thread.start()
@@ -35,7 +30,6 @@ class ChatPromptNode(Node):
         print(
             f"\nNaVILA CLI Chat 시작\n"
             f"  prompt_topic : {prompt_topic}\n"
-            f"  output_topic : {output_topic}\n"
             f"  종료하려면 'quit' 입력\n"
         )
 
@@ -54,11 +48,7 @@ class ChatPromptNode(Node):
             if not user_input.strip():
                 continue
 
-            print(f"[You]: {user_input.strip()}")
             self.prompt_pub.publish(String(data=user_input.strip()))
-
-    def _output_callback(self, msg: String):
-        print(f"\n[Robot]: {msg.data}\n>>> ", end="", flush=True)
 
 
 def main(args=None):
