@@ -52,6 +52,7 @@ class NaViLANode(Node):
         self.declare_parameter("inference_hz", 1.0)
         self.declare_parameter("max_new_tokens", 256)
         self.declare_parameter("load_4bit", True)
+        self.declare_parameter("history_stride", 900)  # 히스토리 샘플링 간격 (프레임 수), 30fps 기준 30초
         self.declare_parameter("image_topic", "/camera/image_raw")
         self.declare_parameter("instruction_topic", "/navila/instruction")
         self.declare_parameter("command_topic", "/navila/command")
@@ -62,6 +63,7 @@ class NaViLANode(Node):
         self.max_new_tokens = self.get_parameter("max_new_tokens").value
         load_4bit = self.get_parameter("load_4bit").value
         inference_hz = self.get_parameter("inference_hz").value
+        self.history_stride = self.get_parameter("history_stride").value
 
         image_topic = self.get_parameter("image_topic").value
         instruction_topic = self.get_parameter("instruction_topic").value
@@ -72,7 +74,11 @@ class NaViLANode(Node):
             raise RuntimeError("model_path is required")
 
         # 프레임 버퍼 및 현재 지시
-        self.frame_buffer: deque = deque(maxlen=self.num_frames)
+        # history_buffer: stride마다 1장씩 저장, 항상 num_frames-1장 유지
+        # latest_frame: 카메라에서 온 가장 최신 프레임
+        self.history_buffer: deque = deque(maxlen=self.num_frames - 1)
+        self.latest_frame: PILImage.Image = None
+        self.frame_counter: int = 0
         self.current_instruction: str = ""
         self.bridge = CvBridge()
 
@@ -111,7 +117,10 @@ class NaViLANode(Node):
         try:
             cv_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
             pil_img = PILImage.fromarray(cv_img)
-            self.frame_buffer.append(pil_img)
+            self.latest_frame = pil_img
+            self.frame_counter += 1
+            if self.frame_counter % self.history_stride == 0:
+                self.history_buffer.append(pil_img)
         except Exception as e:
             self.get_logger().warn(f"이미지 변환 실패: {e}")
 
@@ -120,17 +129,19 @@ class NaViLANode(Node):
         self.get_logger().info(f"지시 수신: {self.current_instruction}")
 
     def _inference_callback(self):
-        if len(self.frame_buffer) < self.num_frames:
-            self.get_logger().debug(
-                f"프레임 버퍼 부족: {len(self.frame_buffer)}/{self.num_frames}"
-            )
+        if self.latest_frame is None:
+            self.get_logger().debug("아직 카메라 프레임이 없음")
             return
 
         if not self.current_instruction:
             self.get_logger().debug("지시(instruction)가 없어 추론 스킵")
             return
 
-        images = list(self.frame_buffer)
+        # 히스토리 부족 시 검은 프레임으로 패딩 후 현재 프레임 결합
+        history = list(self.history_buffer)
+        while len(history) < self.num_frames - 1:
+            history.insert(0, PILImage.new("RGB", (448, 448), (0, 0, 0)))
+        images = history + [self.latest_frame]
 
         # 프롬프트 구성 (run_navigation.py 기준)
         image_token = "<image>\n"
@@ -173,7 +184,6 @@ class NaViLANode(Node):
                     input_ids,
                     images=images_tensor,
                     do_sample=False,
-                    temperature=0.0,
                     max_new_tokens=self.max_new_tokens,
                     use_cache=True,
                     stopping_criteria=[stopping_criteria],
@@ -189,11 +199,10 @@ class NaViLANode(Node):
 
             self.get_logger().info(f"명령 출력: {output}")
             self.command_pub.publish(String(data=output))
+            self.current_instruction = ""
 
         except Exception as e:
             self.get_logger().error(f"추론 실패: {e}")
-
-        self.current_instruction = ""
 
 
 def main(args=None):
