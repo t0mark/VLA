@@ -11,6 +11,7 @@ Publishes:
 
 import sys
 import os
+import time
 
 # CUDA 메모리 할당기 초기화 전에 설정해야 효과가 있음
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
@@ -52,7 +53,7 @@ class NaViLANode(Node):
         self.declare_parameter("inference_hz", 1.0)
         self.declare_parameter("max_new_tokens", 256)
         self.declare_parameter("load_4bit", True)
-        self.declare_parameter("history_stride", 900)  # 히스토리 샘플링 간격 (프레임 수), 30fps 기준 30초
+        self.declare_parameter("history_interval", 1.0)  # 히스토리 샘플링 간격 (초)
         self.declare_parameter("image_topic", "/camera/image_raw")
         self.declare_parameter("instruction_topic", "/navila/instruction")
         self.declare_parameter("command_topic", "/navila/command")
@@ -63,7 +64,7 @@ class NaViLANode(Node):
         self.max_new_tokens = self.get_parameter("max_new_tokens").value
         load_4bit = self.get_parameter("load_4bit").value
         inference_hz = self.get_parameter("inference_hz").value
-        self.history_stride = self.get_parameter("history_stride").value
+        self.history_interval = self.get_parameter("history_interval").value
 
         image_topic = self.get_parameter("image_topic").value
         instruction_topic = self.get_parameter("instruction_topic").value
@@ -78,7 +79,7 @@ class NaViLANode(Node):
         # latest_frame: 카메라에서 온 가장 최신 프레임
         self.history_buffer: deque = deque(maxlen=self.num_frames - 1)
         self.latest_frame: PILImage.Image = None
-        self.frame_counter: int = 0
+        self.last_history_time: float = 0.0
         self.current_instruction: str = ""
         self.bridge = CvBridge()
 
@@ -118,9 +119,10 @@ class NaViLANode(Node):
             cv_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
             pil_img = PILImage.fromarray(cv_img)
             self.latest_frame = pil_img
-            self.frame_counter += 1
-            if self.frame_counter % self.history_stride == 0:
+            now = time.time()
+            if now - self.last_history_time >= self.history_interval:
                 self.history_buffer.append(pil_img)
+                self.last_history_time = now
         except Exception as e:
             self.get_logger().warn(f"이미지 변환 실패: {e}")
 
