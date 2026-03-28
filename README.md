@@ -1,4 +1,4 @@
-# moma_vla
+# na_vila_ros
 
 NaVILA (RSS 2025) VLA 모델을 ROS 2에서 실시간으로 실행하는 추론 패키지.
 
@@ -112,7 +112,7 @@ sudo apt install \
 
 ```bash
 cd ros_ws
-colcon build --packages-select moma_vla
+colcon build --packages-select na_vila_ros
 source install/setup.bash
 ```
 
@@ -123,10 +123,10 @@ source install/setup.bash
 ### 기본 실행 (모델 경로 자동 탐지)
 
 ```bash
-ros2 launch moma_vla navila.launch.py
+ros2 launch na_vila_ros navila.launch.py
 
 # CLI 입력 노드 (별도 터미널)
-ros2 run moma_vla chat_prompt_node
+ros2 run na_vila_ros chat_prompt_node
 ```
 
 ---

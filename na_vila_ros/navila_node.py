@@ -9,6 +9,7 @@ Publishes:
   /navila/command      (std_msgs/String)    - 모델 출력 명령
 """
 
+import re
 import sys
 import os
 import time
@@ -201,7 +202,11 @@ class NaViLANode(Node):
 
             self.get_logger().info(f"명령 출력: {output}")
             self.command_pub.publish(String(data=output))
-            self.current_instruction = ""
+
+            # 모델이 stop을 출력한 경우에만 지시 종료
+            if re.search(r"\bstop\b", output, re.IGNORECASE):
+                self.get_logger().info("완료 신호 감지 — 지시 종료")
+                self.current_instruction = ""
 
         except Exception as e:
             self.get_logger().error(f"추론 실패: {e}")

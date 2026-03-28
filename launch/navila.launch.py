@@ -8,10 +8,10 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory("moma_vla")
+    pkg_share = get_package_share_directory("na_vila_ros")
     config_dir = os.path.join(pkg_share, "config")
 
-    # pkg_share = <ws>/install/moma_vla/share/moma_vla
+    # pkg_share = <ws>/install/na_vila_ros/share/na_vila_ros
     # ws_root   = <ws>
     ws_root = os.path.normpath(os.path.join(pkg_share, "..", "..", "..", ".."))
     default_model_path = os.path.join(ws_root, "models", "navila-llama3-8b-8f")
@@ -44,7 +44,7 @@ def generate_launch_description():
             description="Base model path (LoRA 사용 시에만 지정)",
         ),
         Node(
-            package="moma_vla",
+            package="na_vila_ros",
             executable="navila_node",
             name="navila_node",
             output="screen",
@@ -57,7 +57,7 @@ def generate_launch_description():
             ],
         ),
         Node(
-            package="moma_vla",
+            package="na_vila_ros",
             executable="regex_parshing_node",
             name="regex_parshing_node",
             output="screen",

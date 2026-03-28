@@ -1,0 +1,22 @@
+services:
+  na_vila:
+    image: t0mark251/vla:na-vila
+    container_name: na_vila
+    privileged: true
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - /dev:/dev
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/Desktop/navila:/workspace/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

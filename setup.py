@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = "moma_vla"
+package_name = "na_vila_ros"
 
 setup(
     name=package_name,
@@ -21,9 +21,9 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "navila_node = moma_vla.navila_node:main",
-            "chat_prompt_node = moma_vla.chat_prompt_node:main",
-            "regex_parshing_node = moma_vla.regex_parshing_node:main",
+            "navila_node = na_vila_ros.navila_node:main",
+            "chat_prompt_node = na_vila_ros.chat_prompt_node:main",
+            "regex_parshing_node = na_vila_ros.regex_parshing_node:main",
         ],
     },
 )
