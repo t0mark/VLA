@@ -1,0 +1,16 @@
+services:
+  univla:
+    image: t0mark/vla:univla
+    container_name: univla
+    privileged: true
+    network_mode: host
+    runtime: nvidia
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - /dev:/dev
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/Desktop/univla:/workspace/
+    stdin_open: true
+    tty: true

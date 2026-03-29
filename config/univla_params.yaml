@@ -1,0 +1,9 @@
+univla_node:
+  ros__parameters:
+    model_path:        /home/t0mark/ros_ws/models/UNIVLA_LIBERO_IMG_BS192_8K
+    vision_hub:        /home/t0mark/ros_ws/models/Emu3-VisionVQ
+    fast_path:         /home/t0mark/ros_ws/models/fast
+    norm_stats_path:   /home/t0mark/ros_ws/models/norm_stats.json
+    device:            cuda:0
+    action_predict_frame: 10
+    inference_rate_hz: 2.0
