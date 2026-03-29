@@ -8,6 +8,7 @@ navila_node:
     history_interval: 10.0  # 히스토리 샘플링 간격 (초)
 
     # 토픽 이름
-    image_topic: "/camera/camera/color/image_raw"
+    #image_topic: "/camera/camera/color/image_raw"
+    image_topic: "/zed/zed_node/rgb/color/rect/image"
     instruction_topic: "/navila/prompt"
     command_topic: "/navila/output"

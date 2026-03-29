@@ -27,7 +27,6 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from cv_bridge import CvBridge
 from PIL import Image as PILImage
 import numpy as np
 
@@ -82,7 +81,6 @@ class NaViLANode(Node):
         self.latest_frame: PILImage.Image = None
         self.last_history_time: float = 0.0
         self.current_instruction: str = ""
-        self.bridge = CvBridge()
 
         # 모델 로딩
         self.get_logger().info(f"모델 로딩 중: {self.model_path} (4-bit: {load_4bit})")
@@ -117,8 +115,10 @@ class NaViLANode(Node):
 
     def _image_callback(self, msg: Image):
         try:
-            cv_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
-            pil_img = PILImage.fromarray(cv_img)
+            arr = np.frombuffer(msg.data, dtype=np.uint8).reshape(msg.height, msg.width, -1)
+            if msg.encoding == "bgr8":
+                arr = arr[:, :, ::-1]
+            pil_img = PILImage.fromarray(arr[:, :, :3])
             self.latest_frame = pil_img
             now = time.time()
             if now - self.last_history_time >= self.history_interval:

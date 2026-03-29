@@ -19,12 +19,15 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
-try:  # v1
-    from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func
-except:  # v2
-    from flash_attn.flash_attn_interface import flash_attn_varlen_qkvpacked_func as flash_attn_unpadded_qkvpacked_func
-
-from flash_attn.bert_padding import pad_input, unpad_input
+try:
+    try:  # v1
+        from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func
+    except Exception:  # v2
+        from flash_attn.flash_attn_interface import flash_attn_varlen_qkvpacked_func as flash_attn_unpadded_qkvpacked_func
+    from flash_attn.bert_padding import pad_input, unpad_input
+    HAS_FLASH_ATTN = True
+except ImportError:
+    HAS_FLASH_ATTN = False
 
 
 class FlashAttention(nn.Module):
@@ -40,6 +43,11 @@ class FlashAttention(nn.Module):
 
     def __init__(self, softmax_scale=None, attention_dropout=0.0, device=None, dtype=None):
         super().__init__()
+        if not HAS_FLASH_ATTN:
+            raise RuntimeError(
+                "flash_attn is not installed. "
+                "FlashAttention (InternViT) cannot be used on this device."
+            )
         self.softmax_scale = softmax_scale
         self.dropout_p = attention_dropout
 
