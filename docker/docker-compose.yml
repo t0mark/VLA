@@ -12,7 +12,7 @@ services:
     volumes:
       - /dev:/dev
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - ~/Desktop/navila:/workspace/
+      - ~/Desktop/vla/navila:/workspace/
     deploy:
       resources:
         reservations:

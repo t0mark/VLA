@@ -34,8 +34,6 @@ RUN apt-get update && apt-get install -y \
         ros-humble-rqt* && \
     rm -rf /var/lib/apt/lists/*
 
-RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
-
 # ── Python 3.10 기본 도구 + 미디어/OpenCV 시스템 의존성 ──────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
@@ -163,6 +161,8 @@ if [ -d "/workspace/NaVILA/llava/train/deepspeed_replace" ]; then\n\
 fi\n' > /usr/local/bin/apply_navila_patches.sh && \
     chmod +x /usr/local/bin/apply_navila_patches.sh
 
-RUN echo '\n# NaVILA transformers/deepspeed patch (컨테이너 시작 시 자동 적용)\napply_navila_patches.sh 2>/dev/null || true' >> /root/.bashrc
+
+    RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
+RUN echo "source /workspace/ros_ws/install/setup.bash" >> /root/.bashrc
 
 WORKDIR /workspace

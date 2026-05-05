@@ -14,7 +14,9 @@ def generate_launch_description():
     # pkg_share = <ws>/install/na_vila_ros/share/na_vila_ros
     # ws_root   = <ws>
     ws_root = os.path.normpath(os.path.join(pkg_share, "..", "..", "..", ".."))
-    default_model_path = os.path.join(ws_root, "models", "navila-llama3-8b-8f")
+    # default_model_path = os.path.join(ws_root, "models", "navila-llama3-8b-8f")
+    default_model_path = os.path.join(ws_root, "models", "navila-8b-8f-sft-chunk5")
+    # default_model_path = os.path.join(ws_root, "models", "navila-8b-8f-sft-chunk7")
 
     # yaml에서 navila_node의 command_topic을 읽어 regex_parshing_node의
     # input_topic과 동일하게 맞춤
@@ -43,6 +45,21 @@ def generate_launch_description():
             default_value="",
             description="Base model path (LoRA 사용 시에만 지정)",
         ),
+        DeclareLaunchArgument(
+            "max_linear_speed",
+            default_value="0.2",
+            description="전진 최대 속도 [m/s]",
+        ),
+        DeclareLaunchArgument(
+            "max_angular_speed",
+            default_value="0.5",
+            description="회전 최대 속도 [rad/s]",
+        ),
+        DeclareLaunchArgument(
+            "smoothing_alpha",
+            default_value="0.15",
+            description="EMA 스무딩 계수 (0<α≤1, 작을수록 부드러움)",
+        ),
         Node(
             package="na_vila_ros",
             executable="navila_node",
@@ -63,6 +80,17 @@ def generate_launch_description():
             output="screen",
             parameters=[{
                 "input_topic": navila_output_topic,
+            }],
+        ),
+        Node(
+            package="na_vila_ros",
+            executable="action_executor_node",
+            name="action_executor_node",
+            output="screen",
+            parameters=[{
+                "max_linear_speed":  LaunchConfiguration("max_linear_speed"),
+                "max_angular_speed": LaunchConfiguration("max_angular_speed"),
+                "smoothing_alpha":   LaunchConfiguration("smoothing_alpha"),
             }],
         ),
     ])

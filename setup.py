@@ -24,6 +24,7 @@ setup(
             "navila_node = na_vila_ros.navila_node:main",
             "chat_prompt_node = na_vila_ros.chat_prompt_node:main",
             "regex_parshing_node = na_vila_ros.regex_parshing_node:main",
+            "action_executor_node = na_vila_ros.action_executor_node:main",
         ],
     },
 )

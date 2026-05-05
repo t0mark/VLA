@@ -25,6 +25,7 @@ from collections import deque
 import torch
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from PIL import Image as PILImage
@@ -95,8 +96,14 @@ class NaViLANode(Node):
         self.get_logger().info("모델 로딩 완료")
 
         # Subscribers
+        # 카메라 퍼블리셔가 BEST_EFFORT로 발행하므로 QoS를 맞춤
+        image_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10,
+        )
         self.image_sub = self.create_subscription(
-            Image, image_topic, self._image_callback, 10
+            Image, image_topic, self._image_callback, image_qos
         )
         self.instruction_sub = self.create_subscription(
             String, instruction_topic, self._instruction_callback, 10
@@ -200,7 +207,7 @@ class NaViLANode(Node):
             if output.endswith(stop_str):
                 output = output[: -len(stop_str)].strip()
 
-            self.get_logger().info(f"명령 출력: {output}")
+            self.get_logger().info(f"Raw Output: {output}")
             self.command_pub.publish(String(data=output))
 
             # 모델이 stop을 출력한 경우에만 지시 종료
