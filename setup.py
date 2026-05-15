@@ -10,7 +10,7 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/config", ["config/navila.yaml"]),
-        ("share/" + package_name + "/launch", ["launch/navila.launch.py"]),
+        ("share/" + package_name + "/launch", ["launch/navila.launch.py", "launch/server.launch.py"]),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -25,6 +25,7 @@ setup(
             "chat_prompt_node = na_vila_ros.chat_prompt_node:main",
             "regex_parshing_node = na_vila_ros.regex_parshing_node:main",
             "action_executor_node = na_vila_ros.action_executor_node:main",
+            "server_node = na_vila_ros.server_node:main",
         ],
     },
 )
